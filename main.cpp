@@ -705,10 +705,17 @@ void display() {
 }
 
 
- void Timer(int value) {
-    isDay = !isDay;
+
+
+void keyboard(unsigned char key, int x, int y) {
+    if (key == 'd' || key == 'D') {
+        isDay = true;
+
+    } else if (key == 'n' || key == 'N') {
+        isDay = false;
+
+    }
     glutPostRedisplay();
-    glutTimerFunc(1500, Timer, 0);
 }
 
 int main(int argc, char** argv) {
@@ -719,11 +726,12 @@ int main(int argc, char** argv) {
     glutCreateWindow("Day-Night Scene");
 
     glutDisplayFunc(display);
-    glutTimerFunc(1500, Timer, 0);
+
+    glutKeyboardFunc(keyboard); // Register keyboard callback function
+
     glutMainLoop();
     return 0;
 }
-
 
 
 
