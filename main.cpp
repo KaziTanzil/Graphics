@@ -1,741 +1,175 @@
-
-
-
 #include <windows.h>
+#include <windows.h>
+#define GLUT_DISABLE_ATEXIT_HACK
 #include <GL/glut.h>
-#include <math.h>
+#include <stdlib.h>
+#include <cmath>
 
-bool isDay = true;
+#define NUM_RAIN 500
 
+struct Raindrop {
+    float x, y;
+    float speed;
+    float length;
+};
 
-void River(){
-   glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(52, 152, 219);
-    else
-        glColor3ub(21, 67, 96);
+Raindrop raindrops[NUM_RAIN];
+float waterLevel = 0.0f; // Water level starts at the bottom
+bool raining = false;
+float startHeight = 600.0f; // Initial height for raindrops
+float rainSpeed = 1.0f; // Initial rain speed
 
-
-
-   glVertex2f(-0.9f, -0.2f);
-   glVertex2f(-0.9f, -0.6f);
-    glVertex2f(0.9f, -0.6f);
-      glVertex2f(0.9f, -0.2f);
-
-    glEnd();
+void initRain() {
+    for (int i = 0; i < NUM_RAIN; i++) {
+        raindrops[i].x = rand() % glutGet(GLUT_WINDOW_WIDTH);
+        raindrops[i].y = startHeight + rand() % 100; // Start raindrops from an initial height
+        raindrops[i].speed = rainSpeed; // Set initial rain speed
+        raindrops[i].length = 10.0f + (rand() % 10);
+    }
 }
 
-void Boat(float x)
-{
-
-     glBegin(GL_POLYGON);
-   if (isDay)
-        glColor3ub(231, 76, 60);
-    else
-        glColor3ub(100, 30, 22);
-
-
-
-        glVertex2f(-0.4f+x, -0.3f);
-        glVertex2f(-0.35f+x, -0.35f);
-        glVertex2f(-0.2f+x, -0.35f);
-        glVertex2f(-0.15f+x, -0.3f);
-        glVertex2f(-0.24f+x, -0.32f);
-        glVertex2f(-0.3f+x, -0.32f);
-
-    glEnd();
-
-    glBegin(GL_POLYGON);
-   if (isDay)
-        glColor3ub(231, 76, 60);
-    else
-        glColor3ub(100, 30, 22);
-
-
-
-
-        glVertex2f(-0.15f+x, -0.3f);
-        glVertex2f(-0.24f+x, -0.32f);
-        glVertex2f(-0.3f+x, -0.32f);
-        glVertex2f(-0.4f+x, -0.3f);
-        glVertex2f(-0.3f+x, -0.3f);
-        glVertex2f(-0.24f+x, -0.3f);
-
-    glEnd();
-
-    glLineWidth(8);
+void drawRain() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glPointSize(3.0);
     glBegin(GL_LINES);
-    glColor3f(0.0f,0.0f,0.0f);
-            glVertex2f(-0.3f+x, -0.3f);
-            glVertex2f(-0.3f+x, -0.32f);
-            glEnd();
-
-            glLineWidth(8);
-    glBegin(GL_LINES);
-    glColor3f(0.0f,0.0f,0.0f);
-            glVertex2f(-0.24f+x, -0.3f);
-            glVertex2f(-0.24f+x, -0.32f);
-            glEnd();
-
-
-
-
-}
-
-void Road()
-
-{
-        glBegin(GL_POLYGON);
-        if(isDay)
-        glColor3ub(220, 118, 51);
-
-        else
-   glColor3ub(40, 55, 71);
-
-
-
-        glVertex2f(-0.9f, 0.15f);
-        glVertex2f(-0.9f, 0.0f);
-        glVertex2f(0.9f, 0.0f);
-        glVertex2f(0.9f, 0.15f);
-
+    glColor3f(1.0f, 1.0f, 1.0f); // White color for raindrops
+    for (int i = 0; i < NUM_RAIN; i++) {
+        glVertex2f(raindrops[i].x, raindrops[i].y);
+        glVertex2f(raindrops[i].x + raindrops[i].length * cos(85 * 3.14159 / 180), raindrops[i].y - raindrops[i].length * sin(85 * 3.14159 / 180)); // 85 degree angle
+    }
     glEnd();
 
-    glBegin(GL_POLYGON);
-if(isDay)
-        glColor3ub(220, 118, 51);
-
-        else
-   glColor3ub(40, 55, 71);
-
-
-
-         glVertex2f(-0.02f, 0.5f);
-        glVertex2f(-0.15f, 0.15f);
-        glVertex2f(0.15f, 0.15f);
-        glVertex2f(0.02f, 0.5f);
-
-
-    glEnd();
-}
-
-
-
-
-
-                void Tree( float a, float b)
-
-{
-     glBegin(GL_POLYGON);
-     if(isDay)
-        glColor3ub(190, 96, 26 );
-
-
-     else
-   glColor3ub(120, 96, 26 );
-
-
-
-         glVertex2f(-0.88f+a, 0.38f+b);
-        glVertex2f(-0.88f+a, 0.18f+b);
-        glVertex2f(-0.84f+a, 0.18f+b);
-        glVertex2f(-0.84f+a, 0.38f+b);
-        glVertex2f(-0.86f+a, 0.36f+b);
-
-
+    // Draw water level
+    glBegin(GL_QUADS);
+    glColor3f(0.0f, 0.0f, 1.0f); // Blue color for water
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(glutGet(GLUT_WINDOW_WIDTH), 0.0f);
+    glVertex2f(glutGet(GLUT_WINDOW_WIDTH), waterLevel);
+    glVertex2f(0.0f, waterLevel);
     glEnd();
 
-     glBegin(GL_POLYGON);
-for(int i=0;i<200;i++)
-        {
-            if(isDay)
-                 glColor3ub(30, 132, 73);
+    if (waterLevel < 10) {
+        // Draw house body
+        glColor3f(1.0f, 0.0f, 0.0f); // Red color for house body
+        glBegin(GL_QUADS);
+        glVertex2f(50.0f, waterLevel);
+        glVertex2f(100.0f, waterLevel);
+        glVertex2f(100.0f, 10.0f);
+        glVertex2f(50.0f, 10.0f);
+        glEnd();
 
-            else
-            glColor3ub(11, 83, 69 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.075;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.97+a,y+0.48+b);
-        }
-glEnd();
-glBegin(GL_POLYGON);
-for(int i=0;i<200;i++)
-        {
-            if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.075;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.88+a,y+0.55+b);
-        }
-glEnd();
-    glBegin(GL_POLYGON);
-for(int i=0;i<200;i++)
-        {
-            if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.075;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.84+a,y+0.54+b);
-        }
-glEnd();
-glBegin(GL_POLYGON);
-for(int i=0;i<200;i++)
-        {
-            if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.075;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.73+a,y+0.47+b);
-        }
-glEnd();
-    glBegin(GL_POLYGON);
-for(int i=0;i<200;i++)
-        {
-           if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.075;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.80+a,y+0.46+b);
-        }
-glEnd();
-
-glBegin(GL_POLYGON);
-for(int i=0;i<200;i++)
-        {
-            if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.075;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.84+a,y+0.43+b);
-        }
-glEnd();
-    glBegin(GL_POLYGON);
-for(int i=0;i<200;i++)
-        {
-           if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.075;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.9+a,y+0.44+b);
-        }
-glEnd();
-
-
-    glBegin(GL_POLYGON);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-         glVertex2f(-0.3f, 0.54f);
-        glVertex2f(-0.3f, 0.5f);
-        glVertex2f(0.9f, 0.5f);
-        glVertex2f(0.9f, 0.54f);
-
-
-    glEnd();
-
-
-    glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-
-         glVertex2f(-0.66f, 0.55f);
-        glVertex2f(-0.72f, 0.5f);
-        glVertex2f(-0.60f, 0.5f);
-
-
-
-    glEnd();
-
-    glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-
-        glVertex2f(-0.56f, 0.55f);
-        glVertex2f(-0.62f, 0.5f);
-        glVertex2f(-0.50f, 0.5f);
-
-
-
-    glEnd();
-    glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-
-                 glVertex2f(-0.46f, 0.55f);
-        glVertex2f(-0.52f, 0.5f);
-        glVertex2f(-0.40f, 0.5f);
-
-
-
-    glEnd();
-
-    glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-
-                 glVertex2f(-0.36f, 0.55f);
-        glVertex2f(-0.30f, 0.5f);
-        glVertex2f(-0.42f, 0.5f);
-
-
-
-    glEnd();
-
-     glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-
-                 glVertex2f(-0.26f, 0.60f);
-        glVertex2f(-0.20f, 0.5f);
-        glVertex2f(-0.32f, 0.5f);
-
+        // Draw roof
+        glColor3f(1.0f, 0.5f, 0.0f); // Orange color for roof
         glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-
-                 glVertex2f(-0.16f, 0.60f);
-        glVertex2f(-0.10f, 0.5f);
-        glVertex2f(-0.22f, 0.5f);
-
-
-
-    glEnd();
+        glVertex2f(25.0f, 10.0f);
+        glVertex2f(125.0f, 10.0f);
+        glVertex2f(75.0f, 50.0f);
+        glEnd();
+    } else if(waterLevel<50) {
+        // Draw roof
+        glColor3f(1.0f, 0.5f, 0.0f); // Orange color for roof
+        glBegin(GL_TRIANGLES);
+        glVertex2f(25.0f, waterLevel);
+        glVertex2f(125.0f, waterLevel);
+        glVertex2f(75.0f, 50.0f);
+        glEnd();
+    }
 
 
 
-     glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-         glVertex2f(0.66f, 0.60f);
-        glVertex2f(0.72f, 0.5f);
-        glVertex2f(0.60f, 0.5f);
-
-
-
-    glEnd();
-
-    glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-        glVertex2f(0.56f, 0.60f);
-        glVertex2f(0.62f, 0.5f);
-        glVertex2f(0.50f, 0.5f);
-
-
-
-    glEnd();
-    glBegin(GL_TRIANGLES);
-   if(isDay)
-                 glColor3ub(30, 132, 73);
-
-            else
-            glColor3ub(11, 83, 69 );
-
-
-
-                 glVertex2f(0.46f, 0.56f);
-        glVertex2f(0.52f, 0.5f);
-        glVertex2f(0.40f, 0.5f);
-
-
-
-    glEnd();
-
-
-
-
-
-
-
+    glFlush();
 }
 
+void updateRain() {
+    static bool raindropReachedGround = false; // Flag to track if any raindrop has reached the ground
+    bool raindropsBelowWaterLevel = false;
 
-void sky()
+    if (raining) {
+        for (int i = 0; i < NUM_RAIN; i++) {
+            raindrops[i].y -= raindrops[i].speed;
+            raindrops[i].x += raindrops[i].speed * cos(85 * 3.14159 / 180); // Move along x-axis at 85 degree angle
 
-{
+            if (!raindropReachedGround && raindrops[i].y <= 0) {
+                raindropReachedGround = true; // Set flag when the first raindrop touches the ground
+            }
 
-    glBegin(GL_POLYGON);
-  if (isDay)
-        glColor3ub(133, 193, 233 );
-// Day color
-    else
-          glColor3ub(52, 73, 94 );
+            if (raindropReachedGround && raindrops[i].y < startHeight) {
+                raindropsBelowWaterLevel = true;
+            }
 
-
-         glVertex2f(-0.9f, 0.9f);
-        glVertex2f(-0.9f, 0.50f);
-        glVertex2f(0.9f, 0.50f);
-        glVertex2f(0.9f, 0.9f);
-
-
-    glEnd();
-
-     //  ----sun----
-
-    glBegin(GL_POLYGON);// Draw a Red 1x1 Square centered at origin
-for(int i=0;i<200;i++)
-        {
-            if (isDay)
-         glColor3ub(247, 220, 111);
-
-// Day color
-    else
-          glColor3ub(208, 211, 212);
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.056;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x+0.54,y+0.80);
+            if (raindrops[i].y < 0) {
+                raindrops[i].x = rand() % glutGet(GLUT_WINDOW_WIDTH);
+                raindrops[i].y = startHeight + rand() % 200; // Reset raindrops to start from an initial height
+            }
         }
-glEnd();
 
+        // Increase water level gradually only when raindrops are falling below the initial water level
+        if (raindropReachedGround && raindropsBelowWaterLevel) {
+            waterLevel += 0.0001f * rainSpeed; // Increment water level based on rain speed
+            if (waterLevel > startHeight) {
+                waterLevel = startHeight; // Limit water level to initial height
+            }
+        }
+    } else {
+        // Clear raindrops if not raining
+        for (int i = 0; i < NUM_RAIN; i++) {
+            raindrops[i].x = -100; // Move raindrops outside the window
+            raindrops[i].y = -100;
+        }
+
+        // Reset the flag when it stops raining
+        raindropReachedGround = false;
+    }
 }
-
-//-----Cloud------
-
-void cloud(float a){
-
- glBegin(GL_POLYGON);// Draw a Red 1x1 Square centered at origin
-for(int i=0;i<200;i++)
-        {
-            if(isDay)
-                glColor3ub(240, 243, 244);
-
-
-            else
-            glColor3ub(98, 101, 103 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.056;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.44+a,y+0.77);
-        }
-glEnd();
-
- glBegin(GL_POLYGON);// Draw a Red 1x1 Square centered at origin
-for(int i=0;i<200;i++)
-        {
-                        if(isDay)
-                glColor3ub(240, 243, 244);
-
-
-            else
-            glColor3ub(98, 101, 103 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.056;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-39+a,y+0.80);
-        }
-glEnd();
-
- glBegin(GL_POLYGON);// Draw a Red 1x1 Square centered at origin
-for(int i=0;i<200;i++)
-        {
-                       if(isDay)
-                glColor3ub(240, 243, 244);
-
-
-            else
-            glColor3ub(98, 101, 103 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.056;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.34+a,y+0.76);
-        }
-glEnd();
-
- glBegin(GL_POLYGON);// Draw a Red 1x1 Square centered at origin
-for(int i=0;i<200;i++)
-        {
-                        if(isDay)
-                glColor3ub(240, 243, 244);
-
-
-            else
-            glColor3ub(98, 101, 103 );
-            float pi=3.1416;
-            float A=(i*2*pi)/200;
-            float r=0.056;
-            float x = r * cos(A);
-            float y = r * sin(A);
-            glVertex2f(x-0.39+a,y+0.72);
-        }
-glEnd();
-
-
-
-
-}
-
-void house(float x, float y) {
-    glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(121, 125, 127); // Day color
-    else
-        glColor3ub(31, 36, 37); // Night color
-
-    glVertex2f(-0.7f + x, 0.4f + y);
-    glVertex2f(-0.8f + x, 0.3f + y);
-    glVertex2f(-0.6f + x, 0.3f + y);
-    glVertex2f(-0.5f + x, 0.4f + y);
-    glEnd();
-
-    glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(156, 100, 12); // Day color
-    else
-        glColor3ub(52, 73, 94); // Night color
-
-    glVertex2f(-0.78f + x, 0.3f + y);
-    glVertex2f(-0.78f + x, 0.2f + y);
-    glVertex2f(-0.58f + x, 0.2f + y);
-    glVertex2f(-0.58f + x, 0.3f + y);
-    glEnd();
-
-    glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(93, 109, 126); // Day color
-    else
-        glColor3ub(41, 128, 185); // Night color
-
-    glVertex2f(-0.78f + x, 0.2f + y);
-    glVertex2f(-0.8f + x, 0.18f + y);
-    glVertex2f(-0.6f + x, 0.18f + y);
-    glVertex2f(-0.58f + x, 0.2f + y);
-    glEnd();
-
-    glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(93, 109, 126); // Day color
-    else
-        glColor3ub(41, 128, 185); // Night color
-
-    glVertex2f(-0.58f + x, 0.2f + y);
-    glVertex2f(-0.6f + x, 0.18f + y);
-    glVertex2f(-0.4f + x, 0.18f + y);
-    glVertex2f(-0.42f + x, 0.2f + y);
-    glEnd();
-
-    glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(156, 100, 12); // Day color
-    else
-        glColor3ub(52, 73, 94); // Night color
-
-    glVertex2f(-0.58f + x, 0.3f + y);
-    glVertex2f(-0.58f + x, 0.2f + y);
-    glVertex2f(-0.42f + x, 0.2f + y);
-    glVertex2f(-0.42f + x, 0.3f + y);
-    glEnd();
-
-    glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(95, 106, 106); // Day color
-    else
-        glColor3ub(44, 62, 80); // Night color
-
-    glVertex2f(-0.5f + x, 0.4f + y);
-    glVertex2f(-0.52f + x, 0.39f + y);
-    glVertex2f(-0.42f + x, 0.3f + y);
-    glVertex2f(-0.4f + x, 0.3f + y);
-    glEnd();
-
-    glBegin(GL_POLYGON);
-    if (isDay)
-       glColor3ub(135, 54, 0 );// Day color
-    else
-        glColor3ub(243, 156, 18); // Night color
-
-    glVertex2f(-0.52f + x, 0.28f + y);
-    glVertex2f(-0.52f + x, 0.24f + y);
-    glVertex2f(-0.48f + x, 0.24f + y);
-    glVertex2f(-0.48f + x, 0.28f + y);
-    glEnd();
-
-    glBegin(GL_POLYGON);
-    if (isDay)
-        glColor3ub(135, 54, 0); // Day color
-    else
-        glColor3ub(39, 55, 70); // Night color
-
-    glVertex2f(-0.7f + x, 0.28f + y);
-    glVertex2f(-0.7f + x, 0.2f + y);
-    glVertex2f(-0.64f + x, 0.2f + y);
-    glVertex2f(-0.64f + x, 0.28f + y);
-    glEnd();
-
-    glBegin(GL_TRIANGLES);
-    if (isDay)
-        glColor3ub(66, 73, 73); // Day color
-    else
-        glColor3ub(44, 62, 80); // Night color
-
-    glVertex2f(-0.51f + x, 0.39f + y);
-    glVertex2f(-0.6f + x, 0.3f + y);
-    glVertex2f(-0.42f + x, 0.3f + y);
-    glEnd();
-}
-
-
-
-
-
-
 
 
 void display() {
-    if (isDay)
-         glClearColor(0.60f, 0.60f, 0.60f, 1.0f);
-
-        else
-      glClearColor(0.40f, 0.40f, 0.40f, 1.0f);
-
-   glClear(GL_COLOR_BUFFER_BIT);
-
-    River();
-    Boat(0);
-    Boat(0.8);
-    Boat(0.3);
-
-    Road();
-    sky();
-    cloud(0);
-    cloud(0.4);
-
-    Tree(0,0);
-    Tree(1.05,0);
-
-    house(0.3,0.09);
-    house(0,0);
-    house(1.2,0.1);
-    house(1.0,0);
-
-
-
-   glFlush();
+    drawRain();
 }
 
-
-
+void update(int value) {
+    updateRain();
+    glutPostRedisplay();
+    glutTimerFunc(16, update, 0);
+}
 
 void keyboard(unsigned char key, int x, int y) {
-    if (key == 'd' || key == 'D') {
-        isDay = true;
+    switch (key) {
+        case 'r':
+            raining = !raining;
+            break;
+        case 's':
 
-    } else if (key == 'n' || key == 'N') {
-        isDay = false;
+            raining = false;
+            break;
 
+        case 'u':
+
+            if (rainSpeed < 500.0f) // Increase rain speed up to 10
+                rainSpeed += 1.0f;
+            break;
+        case 'l':
+            if (rainSpeed > 1.5f) // Decrease rain speed down to 0.1
+                rainSpeed -= 0.5f;
+            break;
     }
-    glutPostRedisplay();
+    // Update raindrop speed
+    for (int i = 0; i < NUM_RAIN; i++) {
+        raindrops[i].speed = rainSpeed;
+    }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     glutInit(&argc, argv);
-
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(800, 600);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Day-Night Scene");
-
+    glutCreateWindow("Raining Effect");
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    gluOrtho2D(0, 800, 0, 600);
+    initRain();
     glutDisplayFunc(display);
-
-    glutKeyboardFunc(keyboard); // Register keyboard callback function
-
+    glutTimerFunc(0, update, 0);
+    glutKeyboardFunc(keyboard);
     glutMainLoop();
     return 0;
 }
-
-
-
-
-
-
-
